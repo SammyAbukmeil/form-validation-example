@@ -3,57 +3,69 @@ import { useEffect, useState } from "react";
 import "./App.css";
 
 function App() {
-  const [data, setData] = useState({});
-  const [errors, setErrors] = useState({});
+  const [formData, setFormData] = useState({});
+  const [formErrors, setFormErrors] = useState({});
 
+  // Get the data for this post and set it in state (to fill the form fields)
   const getPost = async () => {
-    const { data } = await axios.get(
-      "https://jsonplaceholder.typicode.com/posts/1"
-    );
-    setData(data);
+    try {
+      const { data } = await axios.get(
+        "https://jsonplaceholder.typicode.com/posts/1"
+      );
+
+      setFormData(data);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   useEffect(() => {
-    try {
-      getPost();
-    } catch (err) {
-      console.log(err);
-    }
+    getPost();
   }, []);
 
-  const changeHandler = (e) => {
-    setData({
-      ...data,
-      [e.target.name]: e.target.value,
+  const changeHandler = (event) => {
+    setFormData({
+      ...formData,
+      [event.target.name]: event.target.value,
     });
   };
 
-  const submitHandler = async (e) => {
-    e.preventDefault();
+  // Based on https://felixgerschau.com/react-hooks-form-validation-typescript/
+  const submitHandler = async (event) => {
+    event.preventDefault();
 
+    // Reset the errors at the start of submission
+    setFormErrors({});
+
+    // A flag to keep track of whether the form is valid or not
+    // Note: this MUST a variable and not state (state changes are async and aren't quick enough)
     let valid = true;
-    const newErrors = {};
 
-    if (!e.target.title.value) {
+    // An object to keep track of which errors we have
+    const errors = {};
+
+    // If the title (in the formData state) is empty, set the 
+    // valid flag to false and add an error to the errors object
+    if (!formData.title) {
       valid = false;
-      newErrors["title"] = "You must enter a title for your post";
+      errors["title"] = "You must enter a title for your post";
     }
 
-    if (!e.target.body.value) {
+    // If the body (in the formData state) is empty, set the 
+    // valid flag to false and add an error to the errors object
+    if (!formData.body) {
       valid = false;
-      newErrors["body"] = "You must enter a body for your post";
+      errors["body"] = "You must enter a body for your post";
     }
 
+    // If the valid flag is false, set the formErrors to show the error text and return (stop)
     if (!valid) {
-      setErrors(newErrors);
-      return;
+      return setFormErrors(errors);
     }
-
-    setErrors({});
 
     const result = await axios.put(
       "https://jsonplaceholder.typicode.com/posts/1",
-      data
+      formData
     );
 
     console.log(result.data);
@@ -67,10 +79,10 @@ function App() {
           <input
             type="text"
             name="title"
-            value={data.title ?? ""}
+            value={formData.title ?? ""}
             onChange={(e) => changeHandler(e)}
           />
-          {errors.title && <p className="error">{errors.title}</p>}
+          {formErrors.title && <p className="error">{formErrors.title}</p>}
         </div>
         <div>
           <label htmlFor="description">Body:</label>
@@ -79,10 +91,10 @@ function App() {
             id="body"
             cols="30"
             rows="10"
-            value={data.body ?? ""}
+            value={formData.body ?? ""}
             onChange={(e) => changeHandler(e)}
           ></textarea>
-          {errors.body && <p className="error">{errors.body}</p>}
+          {formErrors.body && <p className="error">{formErrors.body}</p>}
         </div>
         <input type="submit" value="Submit" />
       </form>
