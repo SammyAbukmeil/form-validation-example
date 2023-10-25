@@ -5,6 +5,7 @@ import "./App.css";
 function App() {
   const [formData, setFormData] = useState({});
   const [formErrors, setFormErrors] = useState({});
+  const [formSubmitted, setFormSubmitted] = useState(false);
 
   // Get the data for this post and set it in state (to fill the form fields)
   const getPost = async () => {
@@ -23,10 +24,11 @@ function App() {
     getPost();
   }, []);
 
+  // A single change handler function to update any input state
   const changeHandler = (event) => {
     setFormData({
       ...formData,
-      [event.target.name]: event.target.value, // warehouseName: "Test"
+      [event.target.name]: event.target.value, // this will result in `title: "New title"` or `body: "New body"`
     });
   };
 
@@ -34,10 +36,12 @@ function App() {
   const submitHandler = async (event) => {
     event.preventDefault();
 
+    // Reset the form state
+    setFormSubmitted(false);
     setFormErrors({});
 
+    // Variables to keep track of whether the form is valid + the errors
     let formIsValid = true;
-
     const errors = {};
 
     if (!formData.title) {
@@ -51,43 +55,50 @@ function App() {
     }
 
     if (!formIsValid) {
-      return setFormErrors(errors);
+      setFormErrors(errors);
+      return;
     }
 
-    const result = await axios.put(
-      "https://jsonplaceholder.typicode.com/posts/1",
-      formData
-    );
+    await axios.put("https://jsonplaceholder.typicode.com/posts/1", formData);
 
-    console.log(result.data);
+    setFormSubmitted(true);
   };
 
   return (
-    <form onSubmit={submitHandler}>
-      <div>
-        <label htmlFor="name">Title:</label>
-        <input
-          type="text"
-          name="title"
-          value={formData.title ?? ""}
-          onChange={(e) => changeHandler(e)}
-        />
-        {formErrors.title && <p className="error">{formErrors.title}</p>}
-      </div>
-      <div>
-        <label htmlFor="description">Body:</label>
-        <textarea
-          name="body"
-          id="body"
-          cols="30"
-          rows="10"
-          value={formData.body ?? ""}
-          onChange={(e) => changeHandler(e)}
-        ></textarea>
-        {formErrors.body && <p className="error">{formErrors.body}</p>}
-      </div>
-      <input type="submit" value="Submit" />
-    </form>
+    <>
+      <form className="form" onSubmit={submitHandler}>
+        <div>
+          <label htmlFor="name">Title:</label>
+          <input
+            type="text"
+            name="title"
+            value={formData.title ?? ""}
+            onChange={changeHandler}
+            className={`form__input ${
+              formErrors.title ? "form__input--error" : ""
+            }`}
+          />
+          {formErrors.title && <p className="error">{formErrors.title}</p>}
+        </div>
+        <div>
+          <label htmlFor="description">Body:</label>
+          <textarea
+            name="body"
+            id="body"
+            cols="30"
+            rows="10"
+            value={formData.body ?? ""}
+            onChange={changeHandler}
+            className={`form__input ${
+              formErrors.body ? "form__input--error" : ""
+            }`}
+          ></textarea>
+          {formErrors.body && <p className="error">{formErrors.body}</p>}
+        </div>
+        <input type="submit" value="Submit" />
+      </form>
+      {formSubmitted && <p>Post updated!</p>}
+    </>
   );
 }
 
