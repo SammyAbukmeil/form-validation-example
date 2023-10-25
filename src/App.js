@@ -5,7 +5,7 @@ import "./App.css";
 function App() {
   const [formData, setFormData] = useState({
     title: "",
-    body: ""
+    body: "",
   });
   const [formErrors, setFormErrors] = useState({});
   const [formSubmitted, setFormSubmitted] = useState(false);
