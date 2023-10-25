@@ -3,7 +3,10 @@ import { useEffect, useState } from "react";
 import "./App.css";
 
 function App() {
-  const [formData, setFormData] = useState({});
+  const [formData, setFormData] = useState({
+    title: "",
+    body: ""
+  });
   const [formErrors, setFormErrors] = useState({});
   const [formSubmitted, setFormSubmitted] = useState(false);
 
@@ -72,7 +75,7 @@ function App() {
           <input
             type="text"
             name="title"
-            value={formData.title ?? ""}
+            value={formData.title}
             onChange={changeHandler}
             className={`form__input ${
               formErrors.title ? "form__input--error" : ""
@@ -87,7 +90,7 @@ function App() {
             id="body"
             cols="30"
             rows="10"
-            value={formData.body ?? ""}
+            value={formData.body}
             onChange={changeHandler}
             className={`form__input ${
               formErrors.body ? "form__input--error" : ""
